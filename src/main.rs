@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use auto_press_rs::rng::NormalInRange;
 use interception::{Interception, KeyState, ScanCode, Stroke};
 use spdlog::{error, info};
 
@@ -43,11 +44,11 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     loop {
-        let wait = rng.u32(config.press_delay());
+        let wait = rng.norm_rand(config.press_delay());
         info!("Waiting for {wait}ms...");
         sleep(wait);
 
-        let press = rng.u32(config.hold_delay());
+        let press = rng.norm_rand(config.hold_delay());
         info!("Pressing for {press}ms...");
 
         interception.send(keyboard, &[stroke_down]);
