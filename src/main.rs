@@ -9,7 +9,11 @@ use auto_press_rs::utils::{find_keyboard, is_extended, sleep};
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config @ Config { scan_code, .. } = argh::from_env();
 
-    let interception = Interception::new().expect("Initialization failed");
+    let Some(interception) = Interception::new() else {
+        error!("Driver initialization failed!");
+        return Ok(());
+    };
+
     let mut rng = fastrand::Rng::new();
 
     let Some(keyboard) = find_keyboard() else {
