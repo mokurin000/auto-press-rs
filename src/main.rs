@@ -4,11 +4,12 @@ use auto_press_rs::rng::NormalInRange;
 use interception::{Interception, KeyState, ScanCode, Stroke};
 use spdlog::{error, info};
 
-use auto_press_rs::config::Config;
 use auto_press_rs::utils::{find_keyboard, is_extended, sleep};
 
+pub mod config;
+
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
-    let config @ Config { scan_code, .. } = argh::from_env();
+    let config @ config::Config { scan_code, .. } = argh::from_env();
 
     let Some(interception) = Interception::new() else {
         error!("Driver initialization failed!");

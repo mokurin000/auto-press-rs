@@ -13,8 +13,8 @@ impl NormalInRange for Rng {
 
         normal_in_range(
             self,
-            bound_to_num(start).unwrap_or(u32::MIN) as _,
-            bound_to_num(end).unwrap_or(u32::MAX) as _,
+            bound_to_num(start, true) as _,
+            bound_to_num(end, false) as _,
         ) as _
     }
 }
@@ -37,10 +37,22 @@ fn normal_in_range(rng: &mut Rng, min: f64, max: f64) -> f64 {
     }
 }
 
-fn bound_to_num(bound: Bound<&u32>) -> Option<u32> {
+fn bound_to_num(bound: Bound<&u32>, is_min: bool) -> u32 {
     match bound {
-        Bound::Included(&num) => Some(num),
-        Bound::Excluded(num) => Some(num.saturating_sub(1)),
-        Bound::Unbounded => None,
+        Bound::Included(&num) => num,
+        Bound::Excluded(num) => {
+            if is_min {
+                num.saturating_add(1)
+            } else {
+                num.saturating_sub(1)
+            }
+        }
+        Bound::Unbounded => {
+            if is_min {
+                u32::MIN
+            } else {
+                u32::MAX
+            }
+        }
     }
 }

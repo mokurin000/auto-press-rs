@@ -4,6 +4,7 @@ cargo-features = ["panic-immediate-abort"]
 name = "auto-press-rs"
 version = "0.1.0"
 edition = "2024"
+default-run = "auto-press-rs"
 
 [dependencies]
 argh = { version = "0.1.19", default-features = false, features = ["help"] }
