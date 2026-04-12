@@ -6,7 +6,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-argh = { version = "0.1.19", default-features = false }
+argh = { version = "0.1.19", default-features = false, features = ["help"] }
 fastrand = "2.4.1"
 interception = { git = "https://github.com/mokurin000/interception-rs2" }
 spdlog-rs = { version = "0.5.3", default-features = false, features = [
