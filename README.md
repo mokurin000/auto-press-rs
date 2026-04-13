@@ -12,5 +12,5 @@ See [MSDN](https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboa
 
 ## Delay
 
-- Hold delay: the time between when a key is pressed and when it is released.
-- Press delay: the time between when one key is released last time and when the next key is pressed.
+- Hold delay: duration between when a key is pressed and when it is released.
+- Press delay: duration between when one key is released last time and when the next key is pressed.

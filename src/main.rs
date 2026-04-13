@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         info!("Waiting for {wait}ms...");
         sleep(wait);
 
-        let press = rng.norm_rand(config.hold_delay());
+        let press = rng.norm_rand(config.hold_duration());
         info!("Pressing for {press}ms...");
 
         interception.send(keyboard, &[stroke_down]);

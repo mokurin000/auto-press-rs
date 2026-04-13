@@ -18,13 +18,13 @@ pub struct Config {
     #[argh(option)]
     pub press_delay_max: u32,
 
-    /// hold delay range start (milliseconds)
+    /// hold duration range start (milliseconds)
     #[argh(option, default = "50")]
-    pub hold_delay_min: u32,
+    pub hold_time_min: u32,
 
-    /// hold delay range end (milliseconds)
+    /// hold duration range end (milliseconds)
     #[argh(option, default = "120")]
-    pub hold_delay_max: u32,
+    pub hold_time_max: u32,
 }
 
 impl Config {
@@ -32,8 +32,8 @@ impl Config {
         self.press_delay_min..=self.press_delay_max
     }
 
-    pub fn hold_delay(&self) -> RangeInclusive<u32> {
-        self.hold_delay_min..=self.hold_delay_max
+    pub fn hold_duration(&self) -> RangeInclusive<u32> {
+        self.hold_time_min..=self.hold_time_max
     }
 }
 
