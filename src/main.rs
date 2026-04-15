@@ -46,7 +46,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     loop {
-        if let Ok(elapsed) = start.elapsed()
+        if config.run_duration != 0
+            && let Ok(elapsed) = start.elapsed()
             && elapsed.as_secs() / 60 >= config.run_duration
         {
             info!("Quitting...");

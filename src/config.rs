@@ -26,7 +26,7 @@ pub struct Config {
     #[argh(option, default = "120")]
     pub hold_time_max: u32,
 
-    /// minutes to stop this program
+    /// minutes to stop this program, 0 for infinite
     #[argh(option, default = "0")]
     pub run_duration: u64,
 }
