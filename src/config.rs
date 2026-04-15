@@ -25,6 +25,10 @@ pub struct Config {
     /// hold duration range end (milliseconds)
     #[argh(option, default = "120")]
     pub hold_time_max: u32,
+
+    /// minutes to stop this program
+    #[argh(option, default = "0")]
+    pub run_duration: u64,
 }
 
 impl Config {

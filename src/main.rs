@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, time::SystemTime};
 
 use auto_press_rs::rng::NormalInRange;
 use interception::{Interception, KeyState, ScanCode, Stroke};
@@ -10,6 +10,7 @@ pub mod config;
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config @ config::Config { scan_code, .. } = argh::from_env();
+    let start = SystemTime::now();
 
     let Some(interception) = Interception::new() else {
         error!("Driver initialization failed!");
@@ -45,6 +46,13 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     loop {
+        if let Ok(elapsed) = start.elapsed()
+            && elapsed.as_secs() / 60 >= config.run_duration
+        {
+            info!("Quitting...");
+            break Ok(());
+        }
+
         let wait = rng.norm_rand(config.press_delay());
         info!("Waiting for {wait}ms...");
         sleep(wait);
