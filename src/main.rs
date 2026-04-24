@@ -1,5 +1,6 @@
 use std::{error::Error, time::SystemTime};
 
+use fastrand::Rng;
 use interception::Interception;
 use spdlog::{error, info};
 
@@ -23,20 +24,23 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     info!("Keyboard device: {keyboard}");
+    let wait_delay = |rng: &mut Rng| {
+        let wait = rng.norm_rand(config.press_delay());
+        info!("Waiting for {wait}ms...");
+        sleep(wait);
+    };
 
     loop {
-        if config.run_duration != 0
-            && let Ok(elapsed) = start.elapsed()
-            && elapsed.as_secs() / 60 >= config.run_duration
-        {
+        let Ok(elapsed) = start.elapsed() else {
+            break Ok(());
+        };
+
+        if config.run_duration != 0 && elapsed.as_secs() / 60 >= config.run_duration {
             info!("Quitting...");
             break Ok(());
         }
 
-        let wait = rng.norm_rand(config.press_delay());
-        info!("Waiting for {wait}ms...");
-        sleep(wait);
-
+        wait_delay(&mut rng);
         press_key(&config, &mut rng, &interception, keyboard, scan_code)?;
     }
 }
