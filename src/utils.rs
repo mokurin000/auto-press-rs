@@ -1,9 +1,12 @@
-use std::{error::Error, thread, time::Duration};
+use std::error::Error;
+use std::thread;
+use std::time::Duration;
 
 use interception::{Device, Interception, KeyState, ScanCode, Stroke};
 use spdlog::info;
 
-use crate::{config::Config, rng::NormalInRange as _};
+use crate::config::Config;
+use crate::rng::NormalInRange as _;
 
 pub fn sleep(ms: u32) {
     thread::sleep(Duration::from_millis(ms as _));

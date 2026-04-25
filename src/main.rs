@@ -1,15 +1,17 @@
-use std::{error::Error, time::SystemTime};
+use std::error::Error;
+use std::time::Instant;
 
 use fastrand::Rng;
 use interception::Interception;
 use spdlog::{error, info};
 
+use auto_press_rs::config::Config;
+use auto_press_rs::rng::NormalInRange;
 use auto_press_rs::utils::{find_keyboard, press_key, sleep};
-use auto_press_rs::{config::Config, rng::NormalInRange};
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config @ Config { scan_code, .. } = argh::from_env();
-    let start = SystemTime::now();
+    let start = Instant::now();
 
     let Some(interception) = Interception::new() else {
         error!("Driver initialization failed!");
@@ -31,9 +33,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     loop {
-        let Ok(elapsed) = start.elapsed() else {
-            break Ok(());
-        };
+        let elapsed = start.elapsed();
 
         if config.run_duration != 0 && elapsed.as_secs() / 60 >= config.run_duration {
             info!("Quitting...");
