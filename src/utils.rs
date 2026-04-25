@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::ffi::OsString;
 use std::thread;
 use std::time::Duration;
 
@@ -12,8 +13,18 @@ pub fn sleep(ms: u32) {
     thread::sleep(Duration::from_millis(ms as _));
 }
 
-pub fn find_keyboard() -> Option<i32> {
-    (0..20).find(|&dev| interception::is_keyboard(dev))
+pub fn find_keyboard(interception: &Interception) -> Vec<i32> {
+    (1..=10)
+        .filter(|&dev| interception::is_keyboard(dev))
+        .filter(|&dev| get_device_hwid(interception, dev).is_some())
+        .collect()
+}
+
+pub fn find_mouse(interception: &Interception) -> Vec<i32> {
+    (11..=20)
+        .filter(|&dev| interception::is_mouse(dev))
+        .filter(|&dev| get_device_hwid(interception, dev).is_some())
+        .collect()
 }
 
 pub fn is_extended(scan_code: u16) -> bool {
@@ -55,4 +66,19 @@ pub fn press_key(
     interception.send(keyboard, &[stroke_up]);
 
     Ok(())
+}
+
+pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<OsString> {
+    use std::mem::transmute;
+    use std::os::windows::ffi::OsStringExt as _;
+
+    let mut buffer = [0_u8; 201 * size_of::<u16>()];
+    let length = interception.get_hardware_id(device, &mut buffer);
+    if length == 0 {
+        return None;
+    }
+    let buffer: [u16; 201] = unsafe { transmute(buffer) };
+    Some(OsString::from_wide(
+        &buffer[0..length as usize / size_of::<u16>()],
+    ))
 }

@@ -7,7 +7,7 @@ use spdlog::{error, info};
 
 use auto_press_rs::config::Config;
 use auto_press_rs::rng::NormalInRange;
-use auto_press_rs::utils::{find_keyboard, press_key, sleep};
+use auto_press_rs::utils::{find_keyboard, find_mouse, get_device_hwid, press_key, sleep};
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config @ Config { scan_code, .. } = argh::from_env();
@@ -20,12 +20,29 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let mut rng = fastrand::Rng::new();
 
-    let Some(keyboard) = find_keyboard() else {
-        error!("Keyboard device not found!");
-        return Ok(());
-    };
+    info!("Searching devices...");
+    let keyboards = find_keyboard(&interception);
+    let mouses = find_mouse(&interception);
 
-    info!("Keyboard device: {keyboard}");
+    for &keyboard in &keyboards {
+        info!(
+            r"Keybd \\.\interception{keyboard:02}: {}",
+            get_device_hwid(&interception, keyboard)
+                .unwrap()
+                .to_string_lossy()
+        );
+    }
+    for &mouse in &mouses {
+        info!(
+            r"Mouse \\.\interception{mouse:02}: {}",
+            get_device_hwid(&interception, mouse)
+                .unwrap()
+                .to_string_lossy()
+        );
+    }
+
+    let keyboard = keyboards[0];
+
     let wait_delay = |rng: &mut Rng| {
         let wait = rng.norm_rand(config.press_delay());
         info!("Waiting for {wait}ms...");
