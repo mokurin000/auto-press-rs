@@ -1,10 +1,2 @@
 /target
 /interception.dll
-
-/*.txt
-
-__pycache__
-/.venv
-
-/uv.lock
-/.python-version
