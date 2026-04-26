@@ -1,9 +1,10 @@
 use argh::FromArgs;
 use std::ops::RangeInclusive;
+use std::path::PathBuf;
 
 /// keyboard delay config
 #[derive(FromArgs, Debug, Clone)]
-#[argh(description = "Demo program to simulate keyboard input")]
+#[argh(description = "Simulate keyboard/mouse input")]
 #[argh(help_triggers("-h", "--help"))]
 pub struct Config {
     /// minimum hold duration in milliseconds
@@ -13,6 +14,10 @@ pub struct Config {
     /// maximum hold duration in milliseconds
     #[argh(option, default = "150")]
     pub max_hold_duration: u32,
+
+    /// lua script to load
+    #[argh(positional)]
+    pub lua_script: PathBuf,
 }
 
 impl Config {
