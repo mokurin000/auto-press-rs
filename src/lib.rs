@@ -4,8 +4,6 @@ pub mod devices;
 pub mod rng;
 pub mod utils;
 
-pub mod lua_interop;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Interception initialization failed")]

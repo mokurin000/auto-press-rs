@@ -12,6 +12,8 @@ use crate::utils::{
     MouseButton, find_keyboard, find_mouse, get_device_hwid, keyboard_send, mouse_send,
 };
 
+mod lua_interop;
+
 pub struct Controller {
     driver: Interception,
     rng: Rng,
