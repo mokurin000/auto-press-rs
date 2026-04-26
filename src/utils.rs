@@ -81,9 +81,11 @@ pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<St
     }
     let buffer: [u16; MAX_HARDWARE_WIDE_LEN] = unsafe { transmute(buffer) };
     Some(
-        OsString::from_wide(&buffer[0..length as usize / size_of::<u16>()])
+        OsString::from_wide(&buffer[0..(length as usize / size_of::<u16>()) - 1])
             .to_string_lossy()
-            .trim_end_matches("\0")
-            .replace("\0", "\n"),
+            .split('\0')
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join("\n"),
     )
 }

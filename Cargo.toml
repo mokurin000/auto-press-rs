@@ -7,6 +7,7 @@ edition = "2024"
 default-run = "auto-press-rs"
 
 [dependencies]
+ahash = { version = "0.8.12", default-features = false, features = ["no-rng", "std"] }
 argh = { version = "0.1.19", default-features = false, features = ["help"] }
 fastrand = "2.4.1"
 interception = { git = "https://github.com/mokurin000/interception-rs2" }
@@ -14,6 +15,14 @@ spdlog-rs = { version = "0.5.3", default-features = false, features = [
     "level-debug",
     "release-level-info",
 ] }
+
+[dependencies.windows]
+version = "0.62.2"
+features = [
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Foundation",
+    "Win32_System_Registry",
+]
 
 [profile.release]
 lto = true

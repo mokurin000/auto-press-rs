@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::time::Instant;
 
+use auto_press_rs::devices::enum_devices;
 use fastrand::Rng;
 use interception::Interception;
 use spdlog::{error, info};
@@ -20,20 +21,33 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let mut rng = fastrand::Rng::new();
 
-    info!("Searching devices...");
+    info!("Scanning devices...");
+    let win_devices = enum_devices()?;
+
+    info!("Listing interception devices...");
     let keyboards = find_keyboard(&interception);
     let mouses = find_mouse(&interception);
 
     for &keyboard in &keyboards {
+        let hwids = get_device_hwid(&interception, keyboard).unwrap();
+        let Some(devinfo) = win_devices.get(&hwids) else {
+            info!("Keyboard \\\\.\\interception{keyboard:02}: Unknown",);
+            continue;
+        };
         info!(
-            "Keyboard \\\\.\\interception{keyboard:02}:\n{}",
-            get_device_hwid(&interception, keyboard).unwrap()
+            "Keyboard \\\\.\\interception{keyboard:02}: {} - {}",
+            devinfo.manufacturer, devinfo.name
         );
     }
     for &mouse in &mouses {
+        let hwids = get_device_hwid(&interception, mouse).unwrap();
+        let Some(devinfo) = win_devices.get(&hwids) else {
+            info!("Mouse \\\\.\\interception{mouse:02}: Unknown",);
+            continue;
+        };
         info!(
-            "Mouse \\\\.\\interception{mouse:02}:\n{}",
-            get_device_hwid(&interception, mouse).unwrap()
+            "Mouse \\\\.\\interception{mouse:02}: {} - {}",
+            devinfo.manufacturer, devinfo.name
         );
     }
 
