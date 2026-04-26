@@ -139,7 +139,7 @@ pub fn mouse_send(
     };
 
     let press = rng.norm_rand(hold_duration_range);
-    info!("Pressing Mouse {mouse:?} for {press}ms...");
+    info!("Pressing Mouse {button:?} for {press}ms...");
 
     interception.send(mouse, &[stroke_down]);
     sleep(press);
