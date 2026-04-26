@@ -7,7 +7,9 @@ use spdlog::info;
 use crate::config::Config;
 use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
-use crate::utils::{find_keyboard, find_mouse, get_device_hwid, keyboard_send};
+use crate::utils::{
+    MouseButton, find_keyboard, find_mouse, get_device_hwid, keyboard_send, mouse_send,
+};
 
 pub struct Controller {
     driver: Interception,
@@ -18,6 +20,7 @@ pub struct Controller {
     keyboards: Vec<Device>,
     mouses: Vec<Device>,
     selected_keyboard: Device,
+    selected_mouse: Device,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -46,6 +49,7 @@ impl Controller {
             press_min_ms: config.min_hold_duration,
             press_max_ms: config.max_hold_duration,
             selected_keyboard: keyboards[0],
+            selected_mouse: mouses[0],
             driver,
             rng,
             keyboards,
@@ -65,6 +69,17 @@ impl Controller {
         .map_err(|_| Error::InvalidScanCode)
     }
 
+    /// send a Mouse Button
+    pub fn press_mouse(&mut self, button: MouseButton) {
+        mouse_send(
+            &mut self.rng,
+            &self.driver,
+            self.selected_mouse,
+            button,
+            self.press_min_ms..=self.press_max_ms,
+        )
+    }
+
     pub fn normal_dist_delay(&mut self, min_ms: u32, max_ms: u32) {
         let ms = self.rng.norm_rand(min_ms..=max_ms);
 
@@ -73,6 +88,8 @@ impl Controller {
     }
 
     pub fn log_devices(&self) -> Result<(), Error> {
+        info!("Scanning devices...");
+
         let win_devices = enum_devices()?;
 
         let keyboards = &self.keyboards;

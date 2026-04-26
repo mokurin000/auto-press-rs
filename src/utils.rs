@@ -4,7 +4,7 @@ use std::ops::RangeBounds;
 use std::thread;
 use std::time::Duration;
 
-use interception::{Device, Interception, KeyState, ScanCode, Stroke};
+use interception::{Device, Interception, KeyState, MouseFlags, MouseState, ScanCode, Stroke};
 use spdlog::info;
 
 use crate::rng::NormalInRange as _;
@@ -25,6 +25,28 @@ pub fn find_mouse(interception: &Interception) -> Vec<Device> {
         .filter(|&dev| interception::is_mouse(dev))
         .filter(|&dev| get_device_hwid(interception, dev).is_some())
         .collect()
+}
+
+pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<String> {
+    use std::mem::transmute;
+    use std::os::windows::ffi::OsStringExt as _;
+
+    const MAX_HARDWARE_WIDE_LEN: usize = 201;
+
+    let mut buffer = [0_u8; MAX_HARDWARE_WIDE_LEN * size_of::<u16>()];
+    let length = interception.get_hardware_id(device, &mut buffer);
+    if length == 0 {
+        return None;
+    }
+    let buffer: [u16; MAX_HARDWARE_WIDE_LEN] = unsafe { transmute(buffer) };
+    Some(
+        OsString::from_wide(&buffer[0..(length as usize / size_of::<u16>()) - 1])
+            .to_string_lossy()
+            .split('\0')
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join("\n"),
+    )
 }
 
 /// Press key by scan 1 make code
@@ -59,7 +81,7 @@ pub fn keyboard_send(
     };
 
     let press = rng.norm_rand(hold_duration_range);
-    info!("Pressing for {press}ms...");
+    info!("Pressing 0x{scan_code:04x} for {press}ms...");
 
     interception.send(keyboard, &[stroke_down]);
     sleep(press);
@@ -68,24 +90,58 @@ pub fn keyboard_send(
     Ok(())
 }
 
-pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<String> {
-    use std::mem::transmute;
-    use std::os::windows::ffi::OsStringExt as _;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseButton {
+    Left = 1,
+    Right,
+    Middle,
+    Button4,
+    Button5,
+}
 
-    const MAX_HARDWARE_WIDE_LEN: usize = 201;
+/// Press mouse button by scan 1 make code
+///
+/// the normal distributed random hold duration respects config
+pub fn mouse_send(
+    rng: &mut fastrand::Rng,
+    interception: &Interception,
+    mouse: Device,
+    button: MouseButton,
+    hold_duration_range: impl RangeBounds<u32>,
+) {
+    let stroke_down = Stroke::Mouse {
+        state: match button {
+            MouseButton::Left => MouseState::LEFT_BUTTON_DOWN,
+            MouseButton::Right => MouseState::RIGHT_BUTTON_DOWN,
+            MouseButton::Middle => MouseState::MIDDLE_BUTTON_DOWN,
+            MouseButton::Button4 => MouseState::BUTTON_4_DOWN,
+            MouseButton::Button5 => MouseState::BUTTON_5_DOWN,
+        },
+        flags: MouseFlags::empty(),
+        rolling: 0,
+        x: 0,
+        y: 0,
+        information: 0,
+    };
+    let stroke_up = Stroke::Mouse {
+        state: match button {
+            MouseButton::Left => MouseState::LEFT_BUTTON_UP,
+            MouseButton::Right => MouseState::RIGHT_BUTTON_UP,
+            MouseButton::Middle => MouseState::MIDDLE_BUTTON_UP,
+            MouseButton::Button4 => MouseState::BUTTON_4_UP,
+            MouseButton::Button5 => MouseState::BUTTON_5_UP,
+        },
+        flags: MouseFlags::empty(),
+        rolling: 0,
+        x: 0,
+        y: 0,
+        information: 0,
+    };
 
-    let mut buffer = [0_u8; MAX_HARDWARE_WIDE_LEN * size_of::<u16>()];
-    let length = interception.get_hardware_id(device, &mut buffer);
-    if length == 0 {
-        return None;
-    }
-    let buffer: [u16; MAX_HARDWARE_WIDE_LEN] = unsafe { transmute(buffer) };
-    Some(
-        OsString::from_wide(&buffer[0..(length as usize / size_of::<u16>()) - 1])
-            .to_string_lossy()
-            .split('\0')
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>()
-            .join("\n"),
-    )
+    let press = rng.norm_rand(hold_duration_range);
+    info!("Pressing Mouse {mouse:?} for {press}ms...");
+
+    interception.send(mouse, &[stroke_down]);
+    sleep(press);
+    interception.send(mouse, &[stroke_up]);
 }

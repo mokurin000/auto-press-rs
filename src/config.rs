@@ -23,7 +23,7 @@ pub struct Config {
     pub min_hold_duration: u32,
 
     /// maximum hold duration in milliseconds
-    #[argh(option, default = "120")]
+    #[argh(option, default = "150")]
     pub max_hold_duration: u32,
 
     /// stop after these seconds
