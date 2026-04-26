@@ -28,34 +28,34 @@ impl UserData for Controller {
             if driver.press_key(scan_code).is_err() {
                 return Err(Error::runtime("Bad keyboard scan code"));
             }
-            Result::<i32, _>::Ok(0)
+            Ok(())
         });
 
         methods.add_method("key_down", |_lua, driver, scan_code: u16| {
             if driver.key_down(scan_code).is_err() {
                 return Err(Error::runtime("Bad keyboard scan code"));
             }
-            Result::<i32, _>::Ok(0)
+            Ok(())
         });
         methods.add_method("key_up", |_lua, driver, scan_code: u16| {
             if driver.key_up(scan_code).is_err() {
                 return Err(Error::runtime("Bad keyboard scan code"));
             }
-            Result::<i32, _>::Ok(0)
+            Ok(())
         });
 
         methods.add_method_mut("mouse_press", |_lua, driver, button: MouseButton| {
             driver.press_mouse(button);
-            Result::<i32, _>::Ok(0)
+            Ok(())
         });
 
         methods.add_method_mut("delay", |_lua, driver, delay_range: (u32, u32)| {
             let (min_ms, max_ms) = delay_range;
             driver.normal_dist_delay(min_ms, max_ms);
-            Result::<i32, _>::Ok(0)
+            Result::<(), _>::Ok(())
         });
 
-        // returns non-zero if scanning failed
+        // returns false if scanning failed
         methods.add_method("scan_devices", |_lua, driver, _: ()| {
             if driver
                 .log_devices()
@@ -64,13 +64,16 @@ impl UserData for Controller {
                 })
                 .is_err()
             {
-                return Result::<i32, _>::Ok(1);
+                return Ok(false);
             };
-            Result::<i32, _>::Ok(0)
+            Ok(true)
         });
     }
 
     fn add_fields<F: mlua::UserDataFields<Self>>(fields: &mut F) {
+        fields.add_field_method_get("keyboard", |_lua, driver| Ok(driver.selected_keyboard));
+        fields.add_field_method_get("mouse", |_lua, driver| Ok(driver.selected_mouse));
+
         fields.add_field_method_set("keyboard", |_lua, driver, device: i32| {
             driver.selected_keyboard = device;
             Ok(())
