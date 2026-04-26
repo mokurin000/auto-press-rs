@@ -17,7 +17,6 @@ local adjust_time = {
     0x21, -- F, 交互移动魔力之源
     0x02, -- 1 消磨时间
     0x02, -- 1 到早上
-    0x03, -- 2 休息并离开
 }
 
 while true do
@@ -26,6 +25,11 @@ while true do
         input_driver:key_press(scan_code)
         input_driver:delay(ops_min, ops_max)
     end
+
+    input_driver:delay(12000, 15000)
+    input_driver:key_press(0x03)
+    input_driver:delay(ops_min, ops_max)
+
     for i = 1, 6 do
         input_driver:key_press(i + 1) -- keyboard num
         input_driver:delay(pet_place_min, pet_place_max)
