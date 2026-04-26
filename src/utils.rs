@@ -1,10 +1,13 @@
 use std::error::Error;
 use std::ffi::OsString;
+use std::num::NonZero;
 use std::thread;
 use std::time::Duration;
 
 use interception::{Device, Interception, KeyState, ScanCode, Stroke};
+use pci_ids::FromId as _;
 use spdlog::info;
+use usb_ids::FromId as _;
 
 use crate::config::Config;
 use crate::rng::NormalInRange as _;
@@ -88,4 +91,63 @@ pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<St
             .collect::<Vec<_>>()
             .join("\n"),
     )
+}
+
+/// - prefix: `VEN_`, `VID_`, `DEV_`, e.g.
+fn extract_id<'a>(hardware_id: &'a str, prefix: &str) -> Option<&'a str> {
+    hardware_id
+        .find(prefix)
+        .map(|start| start + prefix.len())
+        .map(|start| &hardware_id[start..start + 4])
+}
+
+fn parse_hex_id(hex: &str) -> Option<NonZero<u16>> {
+    u16::from_str_radix(hex.trim_end_matches("&"), 16)
+        .ok()
+        .and_then(|num| NonZero::new(num))
+}
+
+pub fn guess_vendor(hardware_id: &str) -> (Option<&str>, Option<&str>) {
+    let ven = extract_id(hardware_id, "VEN_");
+    let dev = extract_id(hardware_id, "DEV_");
+
+    let vid = extract_id(hardware_id, "VID_");
+    let pid = extract_id(hardware_id, "PID_");
+
+    if let Some(ven) = ven {
+        match ven {
+            "DLLK" | "DELL" => return (Some("Dell"), None),
+            _ => {
+                if let Some(ven_id) = parse_hex_id(ven)
+                    && let Some(vendor) = pci_ids::Vendor::from_id(ven_id.into())
+                {
+                    if let Some(dev) = dev
+                        && let Some(dev_id) = parse_hex_id(dev)
+                        && let Some(device) =
+                            pci_ids::Device::from_vid_pid(ven_id.into(), dev_id.into())
+                    {
+                        return (Some(vendor.name()), Some(device.name()));
+                    } else {
+                        return (Some(vendor.name()), None);
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some(vid) = vid
+        && let Some(vid) = parse_hex_id(vid)
+        && let Some(vendor) = usb_ids::Vendor::from_id(vid.into())
+    {
+        if let Some(pid) = pid
+            && let Some(pid) = parse_hex_id(pid)
+            && let Some(device) = usb_ids::Device::from_vid_pid(vid.into(), pid.into())
+        {
+            return (Some(vendor.name()), Some(device.name()));
+        } else {
+            return (Some(vendor.name()), None);
+        }
+    }
+
+    (None, None)
 }

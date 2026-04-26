@@ -16,6 +16,9 @@ spdlog-rs = { version = "0.5.3", default-features = false, features = [
     "release-level-info",
 ] }
 
+pci-ids = "0.2.6"
+usb-ids = "1.2025.2"
+
 [dependencies.windows]
 version = "0.62.2"
 features = [

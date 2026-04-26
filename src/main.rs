@@ -8,7 +8,9 @@ use spdlog::{error, info};
 
 use auto_press_rs::config::Config;
 use auto_press_rs::rng::NormalInRange;
-use auto_press_rs::utils::{find_keyboard, find_mouse, get_device_hwid, press_key, sleep};
+use auto_press_rs::utils::{
+    find_keyboard, find_mouse, get_device_hwid, guess_vendor, press_key, sleep,
+};
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config @ Config { scan_code, .. } = argh::from_env();
@@ -24,31 +26,24 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Scanning devices...");
     let win_devices = enum_devices()?;
 
-    info!("Listing interception devices...");
     let keyboards = find_keyboard(&interception);
     let mouses = find_mouse(&interception);
 
-    for &keyboard in &keyboards {
-        let hwids = get_device_hwid(&interception, keyboard).unwrap();
-        let Some(devinfo) = win_devices.get(&hwids) else {
-            info!("Keyboard \\\\.\\interception{keyboard:02}: Unknown",);
-            continue;
-        };
-        info!(
-            "Keyboard \\\\.\\interception{keyboard:02}: {} - {}",
-            devinfo.manufacturer, devinfo.name
-        );
-    }
-    for &mouse in &mouses {
-        let hwids = get_device_hwid(&interception, mouse).unwrap();
-        let Some(devinfo) = win_devices.get(&hwids) else {
-            info!("Mouse \\\\.\\interception{mouse:02}: Unknown",);
-            continue;
-        };
-        info!(
-            "Mouse \\\\.\\interception{mouse:02}: {} - {}",
-            devinfo.manufacturer, devinfo.name
-        );
+    for (group, group_name) in [(&keyboards, "Keyboard"), (&mouses, "Mouse")] {
+        info!("Listing {group_name}...");
+        for &device in group {
+            let hwids = get_device_hwid(&interception, device).unwrap();
+            let Some(devinfo) = win_devices.get(&hwids) else {
+                continue;
+            };
+
+            let (vendor, name) = guess_vendor(&hwids);
+            info!(
+                "\\\\.\\interception{device:02}: {} - {}",
+                vendor.unwrap_or(&devinfo.manufacturer),
+                name.unwrap_or(&devinfo.name),
+            );
+        }
     }
 
     let keyboard = keyboards[0];
