@@ -6,6 +6,8 @@ version = "0.1.0"
 edition = "2024"
 default-run = "auto-press-rs"
 
+license = "MIT"
+
 [dependencies]
 ahash = { version = "0.8.12", default-features = false, features = [
     "no-rng",
