@@ -1,5 +1,9 @@
 # auto-press-rs
 
+[Interception]: https://github.com/oblitum/Interception
+
+Lua 5.5 based flexible keyboard/mouse automation framework, implemented with [Interception].
+
 ## Scan code
 
 ### Documentation
