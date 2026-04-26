@@ -6,18 +6,6 @@ use std::ops::RangeInclusive;
 #[argh(description = "Demo program to simulate keyboard input")]
 #[argh(help_triggers("-h", "--help"))]
 pub struct Config {
-    /// scan 1 make code
-    #[argh(option, from_str_fn(parse_int))]
-    pub scan_code: u16,
-
-    /// minimum press delay in milliseconds
-    #[argh(option)]
-    pub min_interval: u32,
-
-    /// maximium press delay in milliseconds
-    #[argh(option)]
-    pub max_interval: u32,
-
     /// minimum hold duration in milliseconds
     #[argh(option, default = "50")]
     pub min_hold_duration: u32,
@@ -25,10 +13,6 @@ pub struct Config {
     /// maximum hold duration in milliseconds
     #[argh(option, default = "150")]
     pub max_hold_duration: u32,
-
-    /// stop after these seconds
-    #[argh(option)]
-    pub run_duration: Option<u64>,
 }
 
 impl Config {

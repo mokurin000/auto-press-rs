@@ -4,6 +4,7 @@ use fastrand::Rng;
 use interception::{Device, Interception};
 use spdlog::info;
 
+use crate::Error;
 use crate::config::Config;
 use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
@@ -21,20 +22,6 @@ pub struct Controller {
     mouses: Vec<Device>,
     selected_keyboard: Device,
     selected_mouse: Device,
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Interception initialization failed")]
-    InterceptionInitFailed,
-    #[error("Invalid scan 1 make code found")]
-    InvalidScanCode,
-    #[error("Keyboard device not found")]
-    KeyboardNotFound,
-    #[error("Mouse device not found")]
-    MouseNotFound,
-    #[error("Win32 Error: {0}")]
-    WindowsError(#[from] windows::core::Error),
 }
 
 impl Controller {

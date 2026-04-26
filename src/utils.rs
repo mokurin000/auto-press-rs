@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::ffi::OsString;
 use std::ops::RangeBounds;
+use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
@@ -90,13 +91,14 @@ pub fn keyboard_send(
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, num_enum::TryFromPrimitive)]
+#[repr(u32)]
 pub enum MouseButton {
     Left = 1,
     Right,
     Middle,
-    Button4,
-    Button5,
+    Backward,
+    Forward,
 }
 
 /// Press mouse button by scan 1 make code
@@ -114,8 +116,8 @@ pub fn mouse_send(
             MouseButton::Left => MouseState::LEFT_BUTTON_DOWN,
             MouseButton::Right => MouseState::RIGHT_BUTTON_DOWN,
             MouseButton::Middle => MouseState::MIDDLE_BUTTON_DOWN,
-            MouseButton::Button4 => MouseState::BUTTON_4_DOWN,
-            MouseButton::Button5 => MouseState::BUTTON_5_DOWN,
+            MouseButton::Backward => MouseState::BUTTON_4_DOWN,
+            MouseButton::Forward => MouseState::BUTTON_5_DOWN,
         },
         flags: MouseFlags::empty(),
         rolling: 0,
@@ -128,8 +130,8 @@ pub fn mouse_send(
             MouseButton::Left => MouseState::LEFT_BUTTON_UP,
             MouseButton::Right => MouseState::RIGHT_BUTTON_UP,
             MouseButton::Middle => MouseState::MIDDLE_BUTTON_UP,
-            MouseButton::Button4 => MouseState::BUTTON_4_UP,
-            MouseButton::Button5 => MouseState::BUTTON_5_UP,
+            MouseButton::Backward => MouseState::BUTTON_4_UP,
+            MouseButton::Forward => MouseState::BUTTON_5_UP,
         },
         flags: MouseFlags::empty(),
         rolling: 0,
@@ -144,4 +146,19 @@ pub fn mouse_send(
     interception.send(mouse, &[stroke_down]);
     sleep(press);
     interception.send(mouse, &[stroke_up]);
+}
+
+impl FromStr for MouseButton {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "left" => MouseButton::Left,
+            "right" => MouseButton::Right,
+            "middle" => MouseButton::Middle,
+            "backward" => MouseButton::Backward,
+            "forward" => MouseButton::Forward,
+            _ => Err(crate::Error::InvalidMouseButton)?,
+        })
+    }
 }

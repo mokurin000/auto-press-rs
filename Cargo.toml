@@ -9,21 +9,30 @@ default-run = "auto-press-rs"
 license = "MIT"
 
 [dependencies]
+# Input driver
+interception = { git = "https://github.com/mokurin000/interception-rs2" }
+
+# Lua runtime
+mlua = { version = "0.11.6", features = ["error-send", "lua55", "vendored"] }
+
+# Common utils
 ahash = { version = "0.8.12", default-features = false, features = [
     "no-rng",
     "std",
 ] }
 argh = { version = "0.1.19", default-features = false, features = ["help"] }
 fastrand = "2.4.1"
-interception = { git = "https://github.com/mokurin000/interception-rs2" }
+thiserror = "2.0.18"
+num_enum = "0.7.6"
 spdlog-rs = { version = "0.5.3", default-features = false, features = [
     "level-debug",
     "release-level-info",
 ] }
 
+# ID database
 pci-ids = { version = "0.2.6", optional = true }
 usb-ids = { version = "1.2025.2", optional = true }
-thiserror = "2.0.18"
+
 
 [features]
 default = ["usb-ids"]
