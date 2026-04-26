@@ -21,7 +21,7 @@ local adjust_time = {
 }
 
 while true do
-    for _, scan_code in adjust_time
+    for _, scan_code in ipairs(adjust_time)
     do
         input_driver:key_press(scan_code)
         input_driver:delay(ops_min, ops_max)
