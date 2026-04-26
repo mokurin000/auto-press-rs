@@ -7,7 +7,10 @@ edition = "2024"
 default-run = "auto-press-rs"
 
 [dependencies]
-ahash = { version = "0.8.12", default-features = false, features = ["no-rng", "std"] }
+ahash = { version = "0.8.12", default-features = false, features = [
+    "no-rng",
+    "std",
+] }
 argh = { version = "0.1.19", default-features = false, features = ["help"] }
 fastrand = "2.4.1"
 interception = { git = "https://github.com/mokurin000/interception-rs2" }
@@ -16,8 +19,14 @@ spdlog-rs = { version = "0.5.3", default-features = false, features = [
     "release-level-info",
 ] }
 
-pci-ids = "0.2.6"
-usb-ids = "1.2025.2"
+pci-ids = { version = "0.2.6", optional = true }
+usb-ids = { version = "1.2025.2", optional = true }
+
+[features]
+default = ["usb-ids"]
+
+pci-ids = ["dep:pci-ids"]
+usb-ids = ["dep:usb-ids"]
 
 [dependencies.windows]
 version = "0.62.2"
