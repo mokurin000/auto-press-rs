@@ -50,9 +50,17 @@ pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<St
     )
 }
 
-/// Press key by scan 1 make code
-///
-/// the normal distributed random hold duration respects config
+fn extended_state(scan_code: u16) -> KeyState {
+    if scan_code >> 8 == 0xE0 {
+        KeyState::E0
+    } else if scan_code >> 8 == 0xE1 {
+        KeyState::E1
+    } else {
+        KeyState::empty()
+    }
+}
+
+/// Enter key by scan 1 make code
 pub fn keyboard_send(
     rng: &mut fastrand::Rng,
     interception: &Interception,
@@ -60,14 +68,7 @@ pub fn keyboard_send(
     scan_code: u16,
     hold_duration_range: impl RangeBounds<u32>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let extended_flag = if scan_code >> 8 == 0xE0 {
-        KeyState::E0
-    } else if scan_code >> 8 == 0xE1 {
-        KeyState::E1
-    } else {
-        KeyState::empty()
-    };
-
+    let extended_flag = extended_state(scan_code);
     let code = ScanCode::try_from(scan_code)?;
 
     let stroke_down = Stroke::Keyboard {
@@ -91,14 +92,48 @@ pub fn keyboard_send(
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, num_enum::TryFromPrimitive)]
-#[repr(u32)]
-pub enum MouseButton {
-    Left = 1,
-    Right,
-    Middle,
-    Backward,
-    Forward,
+/// Press key by scan 1 make code
+pub fn keyboard_down(
+    interception: &Interception,
+    keyboard: Device,
+    scan_code: u16,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let extended_flag = extended_state(scan_code);
+
+    let code = ScanCode::try_from(scan_code)?;
+
+    let stroke_down = Stroke::Keyboard {
+        code,
+        state: KeyState::DOWN | extended_flag,
+        information: 0,
+    };
+
+    info!("Key 0x{scan_code:04x} down");
+    interception.send(keyboard, &[stroke_down]);
+
+    Ok(())
+}
+
+/// Release key by scan 1 make code
+pub fn keyboard_up(
+    interception: &Interception,
+    keyboard: Device,
+    scan_code: u16,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let extended_flag = extended_state(scan_code);
+
+    let code = ScanCode::try_from(scan_code)?;
+
+    let stroke_up = Stroke::Keyboard {
+        code,
+        state: KeyState::UP | extended_flag,
+        information: 0,
+    };
+
+    info!("Key 0x{scan_code:04x} up");
+    interception.send(keyboard, &[stroke_up]);
+
+    Ok(())
 }
 
 /// Press mouse button by scan 1 make code
@@ -161,4 +196,14 @@ impl FromStr for MouseButton {
             _ => Err(crate::Error::InvalidMouseButton)?,
         })
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, num_enum::TryFromPrimitive)]
+#[repr(u32)]
+pub enum MouseButton {
+    Left = 1,
+    Right,
+    Middle,
+    Backward,
+    Forward,
 }

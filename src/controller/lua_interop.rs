@@ -31,6 +31,19 @@ impl UserData for Controller {
             Result::<i32, _>::Ok(0)
         });
 
+        methods.add_method("key_down", |_lua, driver, scan_code: u16| {
+            if driver.key_down(scan_code).is_err() {
+                return Err(Error::runtime("Bad keyboard scan code"));
+            }
+            Result::<i32, _>::Ok(0)
+        });
+        methods.add_method("key_up", |_lua, driver, scan_code: u16| {
+            if driver.key_up(scan_code).is_err() {
+                return Err(Error::runtime("Bad keyboard scan code"));
+            }
+            Result::<i32, _>::Ok(0)
+        });
+
         methods.add_method_mut("mouse_press", |_lua, driver, button: MouseButton| {
             driver.press_mouse(button);
             Result::<i32, _>::Ok(0)

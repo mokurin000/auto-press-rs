@@ -11,6 +11,9 @@ input_driver:delay(1000, 3000)
 
 -- send keyboard input by Scan 1 Make code
 -- https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#scan-codes
+
+-- this will follow delay range from CLI argument
+-- otherwise, implement it by down-up combination and set delay manually
 input_driver:key_press(0x0023) -- press 'H'
 input_driver:key_press(0x0012) -- press 'E'
 input_driver:key_press(0x0026) -- press 'L'

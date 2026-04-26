@@ -9,7 +9,8 @@ use crate::config::Config;
 use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
 use crate::utils::{
-    MouseButton, find_keyboard, find_mouse, get_device_hwid, keyboard_send, mouse_send,
+    MouseButton, find_keyboard, find_mouse, get_device_hwid, keyboard_down, keyboard_send,
+    keyboard_up, mouse_send,
 };
 
 mod lua_interop;
@@ -56,6 +57,18 @@ impl Controller {
             self.press_min_ms..=self.press_max_ms,
         )
         .map_err(|_| Error::InvalidScanCode)
+    }
+
+    /// press a Scan 1 Make code
+    pub fn key_down(&self, scan_code: u16) -> Result<(), Error> {
+        keyboard_down(&self.driver, self.selected_keyboard, scan_code)
+            .map_err(|_| Error::InvalidScanCode)
+    }
+
+    /// release a Scan 1 Make code
+    pub fn key_up(&self, scan_code: u16) -> Result<(), Error> {
+        keyboard_up(&self.driver, self.selected_keyboard, scan_code)
+            .map_err(|_| Error::InvalidScanCode)
     }
 
     /// send a Mouse Button
