@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use auto_press_rs::controller::Controller;
 
@@ -16,13 +16,13 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     loop {
         if let Some(run_duration) = config.run_duration
-            && start_time.elapsed().as_secs() >= run_duration
+            && start_time.elapsed() >= Duration::from_secs(run_duration)
         {
             info!("Quitting gracefully...");
             break Ok(());
         }
 
-        driver.normal_delay(config.min_interval, config.max_interval);
+        driver.normal_dist_delay(config.min_interval, config.max_interval);
         driver.press_key(config.scan_code)?;
     }
 }

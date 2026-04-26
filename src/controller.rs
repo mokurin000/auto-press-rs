@@ -7,7 +7,8 @@ use spdlog::info;
 use crate::config::Config;
 use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
-use crate::utils::{find_keyboard, get_device_hwid, guess_vendor, keyboard_send};
+use crate::utils::{find_keyboard, get_device_hwid, keyboard_send};
+use crate::vendor::guess_vendor;
 
 pub struct Controller {
     driver: Interception,
@@ -62,7 +63,7 @@ impl Controller {
         .map_err(|_| Error::InvalidScanCode)
     }
 
-    pub fn normal_delay(&mut self, min_ms: u32, max_ms: u32) {
+    pub fn normal_dist_delay(&mut self, min_ms: u32, max_ms: u32) {
         let ms = self.rng.norm_rand(min_ms..=max_ms);
 
         info!("Waiting for {:.2}s", ms as f64 / 1000.);
