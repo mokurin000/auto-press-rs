@@ -2,7 +2,7 @@ use argh::FromArgs;
 use std::ops::RangeInclusive;
 
 /// keyboard delay config
-#[derive(FromArgs, Debug)]
+#[derive(FromArgs, Debug, Clone)]
 #[argh(description = "Demo program to simulate keyboard input")]
 #[argh(help_triggers("-h", "--help"))]
 pub struct Config {
@@ -10,38 +10,34 @@ pub struct Config {
     #[argh(option, from_str_fn(parse_int))]
     pub scan_code: u16,
 
-    /// press delay range start (milliseconds)
+    /// minimum press delay in milliseconds
     #[argh(option)]
-    pub press_delay_min: u32,
+    pub min_interval: u32,
 
-    /// press delay range end (milliseconds)
+    /// maximium press delay in milliseconds
     #[argh(option)]
-    pub press_delay_max: u32,
+    pub max_interval: u32,
 
-    /// hold duration range start (milliseconds)
+    /// minimum hold duration in milliseconds
     #[argh(option, default = "50")]
-    pub hold_time_min: u32,
+    pub min_hold_duration: u32,
 
-    /// hold duration range end (milliseconds)
+    /// maximum hold duration in milliseconds
     #[argh(option, default = "120")]
-    pub hold_time_max: u32,
+    pub max_hold_duration: u32,
 
-    /// minutes to stop this program, 0 for infinite
-    #[argh(option, default = "0")]
-    pub run_duration: u64,
+    /// stop after these seconds
+    #[argh(option)]
+    pub run_duration: Option<u64>,
 }
 
 impl Config {
-    pub fn press_delay(&self) -> RangeInclusive<u32> {
-        self.press_delay_min..=self.press_delay_max
-    }
-
     pub fn hold_duration(&self) -> RangeInclusive<u32> {
-        self.hold_time_min..=self.hold_time_max
+        self.min_hold_duration..=self.max_hold_duration
     }
 }
 
-fn parse_int(s: &str) -> Result<u16, String> {
+pub fn parse_int(s: &str) -> Result<u16, String> {
     if let Some(x) = s.strip_prefix("0x") {
         u16::from_str_radix(x, 16)
     } else if let Some(x) = s.strip_prefix("0b") {

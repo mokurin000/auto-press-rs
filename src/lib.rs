@@ -1,5 +1,5 @@
 pub mod config;
+pub mod controller;
 pub mod devices;
-pub mod utils;
-
 pub mod rng;
+pub mod utils;
