@@ -7,8 +7,7 @@ use spdlog::info;
 use crate::config::Config;
 use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
-use crate::utils::{find_keyboard, get_device_hwid, keyboard_send};
-use crate::vendor::guess_vendor;
+use crate::utils::{find_keyboard, find_mouse, get_device_hwid, keyboard_send};
 
 pub struct Controller {
     driver: Interception,
@@ -17,6 +16,7 @@ pub struct Controller {
     press_max_ms: u32,
 
     keyboards: Vec<Device>,
+    mouses: Vec<Device>,
     selected_keyboard: Device,
 }
 
@@ -40,6 +40,7 @@ impl Controller {
         let driver = Interception::new().ok_or(Error::InterceptionInitFailed)?;
 
         let keyboards = find_keyboard(&driver);
+        let mouses = find_mouse(&driver);
 
         Ok(Self {
             press_min_ms: config.min_hold_duration,
@@ -48,6 +49,7 @@ impl Controller {
             driver,
             rng,
             keyboards,
+            mouses,
         })
     }
 
@@ -70,12 +72,13 @@ impl Controller {
         std::thread::sleep(Duration::from_millis(ms as _));
     }
 
-    pub fn list_devices(&self) -> Result<(), Error> {
+    pub fn log_devices(&self) -> Result<(), Error> {
         let win_devices = enum_devices()?;
 
         let keyboards = &self.keyboards;
+        let mouses = &self.mouses;
 
-        for (group, group_name) in [(keyboards, "Keyboard")] {
+        for (group, group_name) in [(keyboards, "Keyboard"), (mouses, "Mouse")] {
             info!("Listing {group_name}...");
             for &device in group {
                 let hwids = get_device_hwid(&self.driver, device).unwrap();
@@ -83,11 +86,10 @@ impl Controller {
                     continue;
                 };
 
-                let (vendor, name) = guess_vendor(&hwids);
                 info!(
                     "\\\\.\\interception{device:02}: {} - {}",
-                    vendor.unwrap_or(&devinfo.manufacturer),
-                    name.unwrap_or(&devinfo.name),
+                    devinfo.vendor_name(),
+                    devinfo.device_name()
                 );
             }
         }

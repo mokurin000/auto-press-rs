@@ -10,7 +10,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config: Config = argh::from_env();
 
     let mut driver = Controller::new(&config).inspect_err(|e| error!("{e}"))?;
-    driver.list_devices()?;
+
+    info!("Scanning devices...");
+    driver.log_devices()?;
 
     let start_time = Instant::now();
 

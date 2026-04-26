@@ -9,20 +9,42 @@ use windows::Win32::Foundation::INVALID_HANDLE_VALUE;
 use windows::Win32::System::Registry::{REG_MULTI_SZ, REG_SZ, REG_VALUE_TYPE};
 use windows::core::Error;
 
+use crate::devices::vendor::guess_vendor;
+
+pub mod vendor;
+
 #[derive(Debug, Clone)]
 pub struct DeviceInfo {
     pub instance_id: String,
-    pub name: String,
+
     pub manufacturer: String,
+    pub friendly_name: String,
+    pub device_desc: String,
+
+    pub vendor_name: Option<String>,
+    pub device_name: Option<String>,
 }
 
 impl DeviceInfo {
-    pub fn new(instance_id: String, name: String, manufacturer: String) -> Self {
-        Self {
-            instance_id,
-            name,
-            manufacturer,
-        }
+    pub fn vendor_name(&self) -> &str {
+        [
+            self.vendor_name.as_deref().unwrap_or(""),
+            &self.manufacturer,
+        ]
+        .into_iter()
+        .find(|s| !s.is_empty())
+        .unwrap_or("Unknown")
+    }
+
+    pub fn device_name(&self) -> &str {
+        [
+            self.device_name.as_deref().unwrap_or(""),
+            &self.friendly_name,
+            &self.device_desc,
+        ]
+        .into_iter()
+        .find(|s| !s.is_empty())
+        .unwrap_or("Unknown")
     }
 }
 
@@ -53,22 +75,27 @@ pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, Error> {
 
             let friendly_name =
                 get_device_property(h_dev_info, &dev_info_data, SPDRP_FRIENDLYNAME)?;
-            let description = get_device_property(h_dev_info, &dev_info_data, SPDRP_DEVICEDESC)?;
-            let name = if friendly_name.is_empty() {
-                description
-            } else {
-                friendly_name
-            };
+            let device_desc = get_device_property(h_dev_info, &dev_info_data, SPDRP_DEVICEDESC)?;
 
-            let manufacturer =
-                get_device_property(h_dev_info, &dev_info_data, SPDRP_MFG).unwrap_or_default();
+            let manufacturer = get_device_property(h_dev_info, &dev_info_data, SPDRP_MFG)?;
 
             let hardware_ids = get_device_property(h_dev_info, &dev_info_data, SPDRP_HARDWAREID)
                 .unwrap_or_default();
 
+            let (vendor_name, dev_name) = guess_vendor(&hardware_ids);
+            let vendor_name = vendor_name.map(str::to_string);
+            let device_name = dev_name.map(str::to_string);
+
             devices.insert(
                 hardware_ids,
-                DeviceInfo::new(instance_id, name, manufacturer),
+                DeviceInfo {
+                    instance_id,
+                    manufacturer,
+                    friendly_name,
+                    device_desc,
+                    vendor_name,
+                    device_name,
+                },
             );
 
             index += 1;
