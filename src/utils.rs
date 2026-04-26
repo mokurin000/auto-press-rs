@@ -68,17 +68,22 @@ pub fn press_key(
     Ok(())
 }
 
-pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<OsString> {
+pub fn get_device_hwid(interception: &Interception, device: Device) -> Option<String> {
     use std::mem::transmute;
     use std::os::windows::ffi::OsStringExt as _;
 
-    let mut buffer = [0_u8; 201 * size_of::<u16>()];
+    const MAX_HARDWARE_WIDE_LEN: usize = 201;
+
+    let mut buffer = [0_u8; MAX_HARDWARE_WIDE_LEN * size_of::<u16>()];
     let length = interception.get_hardware_id(device, &mut buffer);
     if length == 0 {
         return None;
     }
-    let buffer: [u16; 201] = unsafe { transmute(buffer) };
-    Some(OsString::from_wide(
-        &buffer[0..length as usize / size_of::<u16>()],
-    ))
+    let buffer: [u16; MAX_HARDWARE_WIDE_LEN] = unsafe { transmute(buffer) };
+    Some(
+        OsString::from_wide(&buffer[0..length as usize / size_of::<u16>()])
+            .to_string_lossy()
+            .trim_end_matches("\0")
+            .replace("\0", "\n"),
+    )
 }

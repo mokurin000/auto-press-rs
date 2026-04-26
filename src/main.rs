@@ -26,18 +26,14 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     for &keyboard in &keyboards {
         info!(
-            r"Keybd \\.\interception{keyboard:02}: {}",
-            get_device_hwid(&interception, keyboard)
-                .unwrap()
-                .to_string_lossy()
+            "Keyboard \\\\.\\interception{keyboard:02}:\n{}",
+            get_device_hwid(&interception, keyboard).unwrap()
         );
     }
     for &mouse in &mouses {
         info!(
-            r"Mouse \\.\interception{mouse:02}: {}",
-            get_device_hwid(&interception, mouse)
-                .unwrap()
-                .to_string_lossy()
+            "Mouse \\\\.\\interception{mouse:02}:\n{}",
+            get_device_hwid(&interception, mouse).unwrap()
         );
     }
 
