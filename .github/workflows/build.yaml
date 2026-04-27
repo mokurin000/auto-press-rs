@@ -64,9 +64,12 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "release"
+          New-Item -ItemType Directory -Force -Path "release/licenses"
 
           Copy-Item "target/x86_64-pc-windows-msvc/release/auto-press-rs.exe" -Destination "release/auto-press-rs.exe"
           Copy-Item "interception.dll" -Destination "release/interception.dll"
+          Copy-Item "LICENSE" -Destination "release/licenses/LICENSE"
+          Copy-Item "licenses/interception-LGPL-3.0" -Destination "release/licenses/interception"
 
           # 复制 demo 目录下的所有 .lua 文件
           if (Test-Path "demo") {
