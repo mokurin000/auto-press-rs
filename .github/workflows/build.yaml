@@ -30,6 +30,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-pc-windows-msvc
+          components: rust-src
 
       - name: Download interception.dll
         run: |
