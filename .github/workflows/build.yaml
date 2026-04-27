@@ -71,9 +71,8 @@ jobs:
           Copy-Item "LICENSE" -Destination "release/licenses/LICENSE"
           Copy-Item "licenses/interception-LGPL-3.0" -Destination "release/licenses/interception"
 
-          # 复制 demo 目录下的所有 .lua 文件
           if (Test-Path "demo") {
-            Copy-Item -Path "demo/*.lua" -Destination "release/" -Force -ErrorAction SilentlyContinue
+            Copy-Item -Recurse -Path "demo/" -Destination "release/" -Force -ErrorAction SilentlyContinue
           }
       - name: Upload artifact
         uses: actions/upload-artifact@v7
