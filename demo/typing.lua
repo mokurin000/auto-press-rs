@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global, lowercase-global
+---@diagnostic disable: lowercase-global
 
 ---@class Driver
 --- Sleep for a random duration between min and max milliseconds (normally distributed)
