@@ -23,7 +23,11 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let prog_start = Instant::now();
 
-    let lua = Lua::new();
+    let lua = if config.debug {
+        unsafe { Lua::unsafe_new() }
+    } else {
+        Lua::new()
+    };
     lua.globals().set("input_driver", driver)?;
 
     let time_utc = lua.create_function(|_lua, ()| {

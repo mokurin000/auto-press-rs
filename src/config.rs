@@ -7,6 +7,11 @@ use std::path::PathBuf;
 #[argh(description = "Simulate keyboard/mouse input")]
 #[argh(help_triggers("-h", "--help"))]
 pub struct Config {
+    /// load full standard library for lua:
+    /// https://docs.rs/mlua/0.11.6/mlua/struct.StdLib.html
+    #[argh(switch)]
+    pub debug: bool,
+
     /// minimum hold duration in milliseconds
     #[argh(option, default = "50")]
     pub min_hold_duration: u32,
