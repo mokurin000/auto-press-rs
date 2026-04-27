@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use auto_press_rs::controller::Controller;
 
@@ -20,8 +21,23 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         return Ok(());
     }
 
+    let prog_start = Instant::now();
+
     let lua = Lua::new();
     lua.globals().set("input_driver", driver)?;
+
+    let time_utc = lua.create_function(|_lua, ()| {
+        Ok(SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as i64)
+    })?;
+    let time_mono = lua.create_function(move |_lua, ()| {
+        Ok(prog_start.elapsed().as_millis() as i64) // Relative
+    })?;
+
+    lua.globals().set("time_utc", time_utc)?;
+    lua.globals().set("time_mono", time_mono)?;
 
     info!(
         "Press duration: {}ms ~ {}ms",

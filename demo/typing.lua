@@ -31,3 +31,10 @@
 --- Mouse device to use (11~20)
 ---@field mouse integer
 input_driver = _G.input_driver
+
+--- Unix timestamp in milliseconds
+---@type fun(): number
+time_utc = _G.time_utc
+--- Precise monotonic time for measuring duration passed, in  milliseconds
+---@type fun(): number
+time_mono = _G.time_mono
