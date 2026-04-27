@@ -1,0 +1,70 @@
+name: Build auto-press-rs (Windows x64)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        lua_feature:
+          - lua55
+          - lua52
+          - lua51
+          - luajit
+          - luajit52
+        device_info:
+          - false
+          - true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust nightly (x86_64-pc-windows-msvc)
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Download interception.dll
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/bozbez/interception-sys/raw/refs/heads/master/interception-1.0.1/x64/interception.dll" `
+                            -OutFile "interception.dll"
+
+      - name: Set build features
+        shell: pwsh
+        run: |
+          $features = "${{ matrix.lua_feature }}"
+          if (${{ matrix.device_info }}) {
+            $features += ",device-info"
+          }
+          echo "FEATURES=$features" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "Building with features: $features"
+
+      - name: Build with Cargo (Release)
+        run: cargo build --release --target x86_64-pc-windows-msvc --features ${{ env.FEATURES }}
+
+      - name: Prepare artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "release"
+          
+          Copy-Item "target/x86_64-pc-windows-msvc/release/auto-press-rs.exe" -Destination "release/auto-press-rs.exe"
+          Copy-Item "interception.dll" -Destination "release/interception.dll"
+          
+          # 复制 demo 目录下的所有 .lua 文件
+          if (Test-Path "demo") {
+            Copy-Item -Path "demo/*.lua" -Destination "release/" -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-press-rs-${{ matrix.lua_feature }}${{ matrix.device_info && '-with-device-info' || '-no-device-info' }}
+          path: release/
+          if-no-files-found: warn
