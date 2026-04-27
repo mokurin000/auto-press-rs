@@ -1,15 +1,23 @@
 name: Build auto-press-rs (Windows x64)
-
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - master
+      - main
+    paths:
+      - ".github/workflows/**"
+      - "src/**/*.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
-    branches: [ main, master ]
-
+    paths:
+      - ".github/workflows/**"
+      - "src/**/*.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
 jobs:
   build:
     runs-on: windows-latest
-
     strategy:
       matrix:
         lua_feature:
@@ -23,22 +31,18 @@ jobs:
         device_info:
           - false
           - true
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Install Rust nightly (x86_64-pc-windows-msvc)
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-pc-windows-msvc
           components: rust-src
-
       - name: Download interception.dll
         run: |
           Invoke-WebRequest -Uri "https://github.com/bozbez/interception-sys/raw/refs/heads/master/interception-1.0.1/x64/interception.dll" `
                             -OutFile "interception.dll"
-
       - name: Set build features
         shell: pwsh
         id: prep-features
@@ -49,27 +53,24 @@ jobs:
           }
           echo "features=$features" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "Building with features: $features"
-
       - name: Build with Cargo (Release)
-        shell: pwsh
-        run: cargo build --release `
-          --target x86_64-pc-windows-msvc `
-          --features ${{ steps.prep-features.outputs.features }} `
+        shell: bash
+        run: cargo build --release \
+          --target x86_64-pc-windows-msvc \
+          --features ${{ steps.prep-features.outputs.features }} \
           --no-default-features
-
       - name: Prepare artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "release"
-          
+
           Copy-Item "target/x86_64-pc-windows-msvc/release/auto-press-rs.exe" -Destination "release/auto-press-rs.exe"
           Copy-Item "interception.dll" -Destination "release/interception.dll"
-          
+
           # 复制 demo 目录下的所有 .lua 文件
           if (Test-Path "demo") {
             Copy-Item -Path "demo/*.lua" -Destination "release/" -Force -ErrorAction SilentlyContinue
           }
-
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
