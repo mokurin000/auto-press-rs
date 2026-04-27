@@ -105,8 +105,9 @@ impl Controller {
                     continue;
                 };
 
+                // \\.\interception{device-1:02}
                 info!(
-                    "\\\\.\\interception{device:02}: {} - {}",
+                    "[{device:02}]: {} - {}",
                     devinfo.vendor_name(),
                     devinfo.device_name()
                 );
