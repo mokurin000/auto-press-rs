@@ -1,7 +1,7 @@
 ---@diagnostic disable: undefined-global, lowercase-global
 
 ---@class Driver
---- Normal-distributed delay in specifed time range
+--- Sleep for a random duration between min and max milliseconds (normally distributed)
 ---@field delay fun(self: Driver, min_millsec: integer, max_millsec: integer): nil
 --- [Scan 1 Make]: https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#scan-codes
 --- Click the keyboard key once. See [Scan 1 Make] for Scan codes.
