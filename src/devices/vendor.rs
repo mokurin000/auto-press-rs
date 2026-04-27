@@ -47,7 +47,7 @@ pub fn guess_vendor(hardware_id: &str) -> (Option<&str>, Option<&str>) {
         }
     }
 
-    #[cfg(feature = "usb-ids")]
+    #[cfg(feature = "device-info")]
     {
         use usb_ids::FromId as _;
 

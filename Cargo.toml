@@ -37,10 +37,9 @@ usb-ids = { version = "1.2025.2", optional = true }
 [features]
 default = ["device-info", "lua55"]
 
-device-info = ["usb-ids", "dep:windows"]
+device-info = ["dep:usb-ids", "dep:windows"]
 
 pci-ids = ["dep:pci-ids"]
-usb-ids = ["dep:usb-ids"]
 
 lua55 = ["mlua/lua55"]
 lua54 = ["mlua/lua54"]
