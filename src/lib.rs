@@ -1,8 +1,10 @@
 pub mod config;
 pub mod controller;
-pub mod devices;
 pub mod rng;
 pub mod utils;
+
+#[cfg(feature = "device-info")]
+pub mod devices;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -16,6 +18,8 @@ pub enum Error {
     KeyboardNotFound,
     #[error("Mouse device not found")]
     MouseNotFound,
+
+    #[cfg(feature = "device-info")]
     #[error("Win32 Error: {0}")]
     WindowsError(#[from] windows::core::Error),
 }

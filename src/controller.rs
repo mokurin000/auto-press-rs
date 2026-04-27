@@ -6,11 +6,9 @@ use spdlog::info;
 
 use crate::Error;
 use crate::config::Config;
-use crate::devices::enum_devices;
 use crate::rng::NormalInRange;
 use crate::utils::{
-    MouseButton, find_keyboard, find_mouse, get_device_hwid, keyboard_down, keyboard_send,
-    keyboard_up, mouse_send,
+    MouseButton, find_keyboard, find_mouse, keyboard_down, keyboard_send, keyboard_up, mouse_send,
 };
 
 mod lua_interop;
@@ -21,8 +19,11 @@ pub struct Controller {
     press_min_ms: u32,
     press_max_ms: u32,
 
+    #[allow(dead_code)]
     keyboards: Vec<Device>,
+    #[allow(dead_code)]
     mouses: Vec<Device>,
+
     selected_keyboard: Device,
     selected_mouse: Device,
 }
@@ -89,7 +90,10 @@ impl Controller {
         std::thread::sleep(Duration::from_millis(ms as _));
     }
 
+    #[cfg(feature = "device-info")]
     pub fn log_devices(&self) -> Result<(), Error> {
+        use crate::devices::enum_devices;
+
         info!("Scanning devices...");
 
         let win_devices = enum_devices()?;
@@ -100,7 +104,7 @@ impl Controller {
         for (group, group_name) in [(keyboards, "Keyboard"), (mouses, "Mouse")] {
             info!("Listing {group_name}...");
             for &device in group {
-                let hwids = get_device_hwid(&self.driver, device).unwrap();
+                let hwids = crate::utils::get_device_hwid(&self.driver, device).unwrap();
                 let Some(devinfo) = win_devices.get(&hwids) else {
                     continue;
                 };

@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use mlua::{Error, FromLua, UserData, UserDataMethods};
-use spdlog::error;
 
 use crate::controller::Controller;
 use crate::utils::MouseButton;
@@ -56,17 +55,20 @@ impl UserData for Controller {
         });
 
         // returns false if scanning failed
+        #[allow(unused_variables)]
         methods.add_method("scan_devices", |_lua, driver, _: ()| {
+            #[cfg(feature = "device-info")]
             if driver
                 .log_devices()
                 .inspect_err(|e| {
-                    error!("failed to scan: {e}");
+                    spdlog::error!("failed to scan: {e}");
                 })
-                .is_err()
+                .is_ok()
             {
-                return Ok(false);
+                return Ok(true);
             };
-            Ok(true)
+
+            Ok(false)
         });
     }
 

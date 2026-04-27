@@ -35,7 +35,9 @@ usb-ids = { version = "1.2025.2", optional = true }
 
 
 [features]
-default = ["usb-ids", "lua55"]
+default = ["device-info", "lua55"]
+
+device-info = ["usb-ids", "dep:windows"]
 
 pci-ids = ["dep:pci-ids"]
 usb-ids = ["dep:usb-ids"]
@@ -47,10 +49,6 @@ lua51 = ["mlua/lua51"]
 luajit = ["mlua/luajit"]
 luajit52 = ["mlua/luajit52"]
 
-luau = ["mlua/luau"]
-luau-jit = ["mlua/luau-jit"]
-luau-vector4 = ["mlua/luau-vector4"]
-
 [dependencies.windows]
 version = "0.62.2"
 features = [
@@ -58,6 +56,7 @@ features = [
     "Win32_Foundation",
     "Win32_System_Registry",
 ]
+optional = true
 
 [profile.release]
 lto = true
