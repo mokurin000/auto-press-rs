@@ -75,10 +75,16 @@ impl UserData for Controller {
         fields.add_field_method_get("mouse", |_lua, driver| Ok(driver.selected_mouse));
 
         fields.add_field_method_set("keyboard", |_lua, driver, device: i32| {
+            if !interception::is_keyboard(device) {
+                return Err(Error::runtime("Invalid keyboard device number"));
+            }
             driver.selected_keyboard = device;
             Ok(())
         });
         fields.add_field_method_set("mouse", |_lua, driver, device: i32| {
+            if !interception::is_mouse(device) {
+                return Err(Error::runtime("Invalid mouse device number"));
+            }
             driver.selected_mouse = device;
             Ok(())
         });
