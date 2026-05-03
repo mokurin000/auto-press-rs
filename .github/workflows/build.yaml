@@ -28,8 +28,6 @@ jobs:
           - lua51
           - luajit
           - luajit52
-        device_info:
-          - true
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -46,10 +44,7 @@ jobs:
         shell: pwsh
         id: prep-features
         run: |
-          $features = "${{ matrix.lua_feature }}"
-          if ("${{ matrix.device_info }}" -eq "true") {
-            $features += ",device-info"
-          }
+          $features = "${{ matrix.lua_feature }},device-info"
           echo "features=$features" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "Building with features: $features"
       - name: Build with Cargo (Release)
