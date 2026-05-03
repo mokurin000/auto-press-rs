@@ -39,8 +39,6 @@ default = ["device-info", "lua55"]
 
 device-info = ["dep:hidapi", "dep:windows"]
 
-pci-ids = ["dep:pci-ids"]
-
 lua55 = ["mlua/lua55"]
 lua54 = ["mlua/lua54"]
 lua53 = ["mlua/lua53"]

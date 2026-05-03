@@ -25,28 +25,8 @@ pub fn guess_vendor<'a, 'b: 'a>(
     let vid = extract_id(hardware_id, "VID_");
     let pid = extract_id(hardware_id, "PID_");
 
-    if let Some(ven) = ven {
-        match ven {
-            "DLLK" | "DELL" => return (Some(Cow::Borrowed("Dell")), pid.map(Cow::Borrowed)),
-            _ => {
-                #[cfg(feature = "pci-ids")]
-                {
-                    use pci_ids::FromId as _;
-
-                    if let Some(ven_id) = parse_hex_id(ven)
-                        && let Some(vendor) = pci_ids::Vendor::from_id(ven_id.into())
-                        && let Some(dev) = dev
-                        && let Some(dev_id) = parse_hex_id(dev)
-                        && let Some(device) =
-                            pci_ids::Device::from_vid_pid(ven_id.into(), dev_id.into())
-                    {
-                        return (Some(vendor.name()), Some(device.name()));
-                    } else {
-                        return (Some(vendor.name()), pid);
-                    }
-                }
-            }
-        }
+    if ven.is_some() {
+        return (ven.map(Cow::Borrowed), dev.map(Cow::Borrowed));
     }
 
     if let Some(vid_s) = vid
