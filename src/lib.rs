@@ -22,4 +22,8 @@ pub enum Error {
     #[cfg(feature = "device-info")]
     #[error("Win32 Error: {0}")]
     WindowsError(#[from] windows::core::Error),
+
+    #[cfg(feature = "device-info")]
+    #[error("HID Error: {0}")]
+    HIDError(#[from] hidapi::HidError),
 }

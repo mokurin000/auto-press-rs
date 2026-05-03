@@ -49,7 +49,7 @@ impl DeviceInfo {
 }
 
 /// Enumerates all currently present devices in the system.
-pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, Error> {
+pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, crate::Error> {
     unsafe {
         let h_dev_info = SetupDiGetClassDevsW(
             None, // NULL = all device classes
@@ -59,7 +59,7 @@ pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, Error> {
         )?;
 
         if h_dev_info == HDEVINFO(INVALID_HANDLE_VALUE.0 as _) {
-            return Err(Error::from_thread());
+            return Err(windows::core::Error::from_thread())?;
         }
 
         let mut devices = AHashMap::new();
@@ -69,6 +69,9 @@ pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, Error> {
         };
 
         let mut index = 0u32;
+
+        let mut api = hidapi::HidApi::new()?;
+        api.refresh_devices()?;
 
         while SetupDiEnumDeviceInfo(h_dev_info, index, &mut dev_info_data).is_ok() {
             let instance_id = get_device_instance_id(h_dev_info, &dev_info_data)?;
@@ -82,9 +85,9 @@ pub fn enum_devices() -> Result<AHashMap<String, DeviceInfo>, Error> {
             let hardware_ids = get_device_property(h_dev_info, &dev_info_data, SPDRP_HARDWAREID)
                 .unwrap_or_default();
 
-            let (vendor_name, dev_name) = guess_vendor(&hardware_ids);
-            let vendor_name = vendor_name.map(str::to_string);
-            let device_name = dev_name.map(str::to_string);
+            let (vendor_name, dev_name) = guess_vendor(&hardware_ids, &api);
+            let vendor_name = vendor_name.map(|s| s.to_string());
+            let device_name = dev_name.map(|s| s.to_string());
 
             devices.insert(
                 hardware_ids,

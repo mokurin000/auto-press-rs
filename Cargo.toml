@@ -31,13 +31,13 @@ spdlog-rs = { version = "0.5.3", default-features = false, features = [
 
 # ID database
 pci-ids = { version = "0.2.6", optional = true }
-usb-ids = { version = "1.2025.2", optional = true }
+hidapi = { version = "2.6.5", optional = true, default-features = false, features = ["windows-native"] }
 
 
 [features]
 default = ["device-info", "lua55"]
 
-device-info = ["dep:usb-ids", "dep:windows"]
+device-info = ["dep:hidapi", "dep:windows"]
 
 pci-ids = ["dep:pci-ids"]
 
